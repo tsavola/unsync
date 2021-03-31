@@ -9,13 +9,11 @@
 // memory usage is higher than with sync.Mutex.  But after the synchronization
 // period is over, the allocation is released and remaining memory usage is
 // comparable to sync.Mutex (on 32-bit systems it is even lower).
-//
-// See https://github.com/tsavola/unsync for benchmark results.
 package unsync
 
 // The implementation relies on lazy propagation of the memory write in the
 // Unsync call to memory reads in LockMaybe calls.  LockMaybe is on the fast
-// path: its memory access non-atomic.  It is assumed that the write will
+// path: its memory access is non-atomic.  It is assumed that the write will
 // eventually be seen by the readers.  Until that, LockMaybe calls are locking
 // the "dangling" sync.Mutex unnecessarily.
 

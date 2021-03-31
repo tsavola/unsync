@@ -7,6 +7,7 @@ package unsync
 import (
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -47,6 +48,24 @@ func BenchmarkUnsyncMutexNopLock(b *testing.B) {
 			l := mu.LockMaybe()
 			runtime.KeepAlive(nil)
 			l.Unlock()
+		}
+	})
+}
+
+func BenchmarkAtomicLoad(b *testing.B) {
+	var mu sync.Mutex
+	var flag uint32
+	atomic.StoreUint32(&flag, 1)
+
+	parallelize(func() {
+		for i := 0; i < b.N; i++ {
+			if atomic.LoadUint32(&flag) == 1 {
+				runtime.KeepAlive(&flag)
+			} else {
+				mu.Lock()
+				runtime.KeepAlive(&flag)
+				mu.Unlock()
+			}
 		}
 	})
 }
